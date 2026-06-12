@@ -1,0 +1,66 @@
+import React, { useEffect, useState } from 'react'
+import dp from "../assets/dp.webp"
+import { FiPlusCircle } from "react-icons/fi";
+import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import axios from 'axios';
+import { serverUrl } from '../App';
+const StoryDp = ({ProfileImage,userName,story}) => {
+const navigate=useNavigate()
+const {userData}=useSelector(state=>state.user)
+const {storyData,storyList}=useSelector(state=>state.story)
+const [viewed,setViewed]=useState(false)
+
+useEffect(()=>{
+  if(story?.viewers?.some((viewer)=>
+viewer?._id?.toString()===userData._id.toString() || viewer?.toString()==userData._id.toString()
+)){
+  setViewed(true)
+}
+else{
+  setViewed(false)
+}
+
+},[story,userData,storyData,storyList])
+const handleViewers=async ()=>{
+   
+  try {
+    const result=await axios.get(`${serverUrl}/api/story/view/${story._id}`,{withCredentials:true})
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+const handleClick=()=>{
+  if (!story && userName=="Your Story") {
+    navigate("/upload")
+  }else if (story && userName=="Your Story") {
+      handleViewers()
+    navigate(`/story/${userData?.userName}`)
+  
+  }else{
+      handleViewers()
+    navigate(`/story/${userName}`)
+  }
+}
+  return (
+    <div className='flex flex-col w-20'>
+      <div className={`w-20 h-20 ${!story?null:!viewed?
+      "bg-linear-to-b from-blue-500 to to-blue-950":"bg-linear-to-r from-gray-500 to to-black"} rounded-full flex justify-center items-center relative`} onClick={handleClick}>
+        <div className='w-18 h-18 border-2 border-black rounded-full cursor-pointer overflow-hidden '>
+          <img src={ProfileImage || dp} alt="" className='w-full object-cover' />
+          {!story && userName=="Your Story" && <div>
+            <FiPlusCircle className='text-black bg-white absolute bottom-2 right-2.5 rounded-full w-5.5 h-5.5' />
+          </div> }
+          
+          
+        </div>
+        </div>
+        <div className='text-[14px] text-center truncate  text-white '>
+          {userName}
+        </div>
+    </div>
+  )
+}
+
+export default StoryDp
